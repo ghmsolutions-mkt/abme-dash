@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Relatório de Matrículas · ABME</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --grad-start: #1a1060;
+      --grad-mid:   #2d1b8e;
+      --grad-end:   #4a2fbf;
+      --coral:      #f86c3e;
+      --coral2:     #ff8c5a;
+      --teal:       #2ecfc3;
+      --surface:    rgba(255,255,255,.07);
+      --border:     rgba(255,255,255,.14);
+      --text:       #ffffff;
+      --muted:      rgba(255,255,255,.55);
+      --success:    #2ecfc3;
+      --warn:       #f5c842;
+      --danger:     #f86c6c;
+    }
+
+    body {
+      background: #ffffff;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: 'Nunito', sans-serif;
+    }
+
+    /* ══ LOCK SCREEN ══════════════════════════════ */
+    #lock-screen {
+      position: relative; z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 2rem;
+      background: #ffffff;
+    }
+
+    .abme-logo {
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+    }
+    .abme-logo-badge {
+      background: linear-gradient(135deg, var(--coral), var(--coral2));
+      color: #fff;
+      font-size: .7rem;
+      font-weight: 900;
+      letter-spacing: .12em;
+      padding: .28rem .65rem;
+      border-radius: 7px;
+    }
+    .abme-logo-text {
+      font-size: .85rem;
+      font-weight: 700;
+      color: #3a3a5c;
+      letter-spacing: .03em;
+    }
+
+    .lock-card {
+      background: #1a2f6e;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 22px;
+      padding: 2.75rem 2.5rem;
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(26,47,110,.35), 0 4px 16px rgba(0,0,0,.15);
+      animation: fadeUp .5s cubic-bezier(.22,1,.36,1) both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .lock-icon {
+      width: 60px; height: 60px;
+      margin: 0 auto 1.4rem;
+      background: linear-gradient(135deg, var(--coral), var(--coral2));
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem;
+      box-shadow: 0 8px 28px rgba(248,108,62,.45);
+    }
+
+    .lock-tag {
+      display: inline-block;
+      background: linear-gradient(90deg, var(--coral), var(--coral2));
+      color: #fff;
+      font-size: .68rem;
+      font-weight: 800;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      padding: .25rem .8rem;
+      border-radius: 20px;
+      margin-bottom: 1rem;
+    }
+
+    .lock-title {
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: #fff;
+      line-height: 1.2;
+      margin-bottom: .5rem;
+    }
+
+    .lock-sub {
+      color: var(--muted);
+      font-size: .875rem;
+      margin-bottom: 2rem;
+    }
+
+    .input-wrap {
+      position: relative;
+      margin-bottom: 1rem;
+    }
+
+    .input-wrap input {
+      width: 100%;
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 12px;
+      color: #fff;
+      font-family: 'Nunito', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      padding: .9rem 3rem .9rem 1.2rem;
+      outline: none;
+      transition: border .2s, background .2s;
+    }
+    .input-wrap input::placeholder { color: rgba(255,255,255,.35); }
+    .input-wrap input:focus { border-color: var(--coral); background: rgba(255,255,255,.15); }
+
+    .toggle-pw {
+      position: absolute; right: 1rem; top: 50%;
+      transform: translateY(-50%);
+      background: none; border: none;
+      color: var(--muted); cursor: pointer; font-size: 1rem; padding: 0;
+      transition: color .2s;
+    }
+    .toggle-pw:hover { color: var(--coral); }
+
+    .btn-enter {
+      width: 100%; padding: .95rem;
+      background: linear-gradient(135deg, var(--coral), var(--coral2));
+      color: #fff;
+      font-family: 'Nunito', sans-serif;
+      font-size: 1rem; font-weight: 800; letter-spacing: .04em;
+      border: none; border-radius: 12px; cursor: pointer;
+      box-shadow: 0 8px 24px rgba(248,108,62,.38);
+      transition: transform .15s, box-shadow .15s;
+    }
+    .btn-enter:hover { transform: translateY(-2px); box-shadow: 0 14px 32px rgba(248,108,62,.5); }
+    .btn-enter:active { transform: translateY(0); }
+
+    .error-msg {
+      color: var(--danger); font-size: .8rem;
+      margin-top: .65rem; min-height: 1rem; font-weight: 700;
+    }
+
+    /* ══ REPORT ═══════════════════════════════════ */
+    #report { display: none; background: #fff; min-height: 100vh; color: #1a1a2e; }
+
+    .report-header {
+      padding: 1rem 2rem;
+      display: flex; align-items: center;
+      justify-content: space-between;
+      gap: 1rem; flex-wrap: wrap;
+      border-bottom: 1px solid #c5d5f0;
+      background: #1a2f6e;
+      position: sticky; top: 0; z-index: 10;
+    }
+
+    .header-left { display: flex; align-items: center; gap: .85rem; }
+
+    .header-badge {
+      background: linear-gradient(135deg, var(--coral), var(--coral2));
+      color: #fff; font-size: .65rem; font-weight: 900;
+      letter-spacing: .1em; padding: .26rem .65rem; border-radius: 7px;
+    }
+
+    .report-title { font-size: 1.05rem; font-weight: 800; color: #ffffff; }
+    .report-meta  { color: rgba(255,255,255,.65); font-size: .75rem; margin-top: .1rem; }
+
+    .btn-logout {
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.3);
+      color: rgba(255,255,255,.8); padding: .4rem 1rem;
+      border-radius: 8px; cursor: pointer;
+      font-size: .8rem; font-family: 'Nunito', sans-serif; font-weight: 700;
+      transition: all .2s;
+    }
+    .btn-logout:hover { background: rgba(248,108,62,.2); border-color: var(--coral); color: var(--coral); }
+
+    /* Stats */
+    .stats-bar {
+      display: flex; gap: 1rem;
+      padding: 1.5rem 2rem; flex-wrap: wrap;
+      background: #fff;
+      border-bottom: 1px solid #e0e8f5;
+    }
+
+    .stat-card {
+      flex: 1; min-width: 130px;
+      background: #f6f9ff;
+      border: 1px solid #dce8f8;
+      border-radius: 16px;
+      padding: 1rem 1.25rem;
+      position: relative; overflow: hidden;
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--coral), var(--coral2));
+    }
+    .stat-card.c-teal::before  { background: linear-gradient(90deg, var(--teal), #5ee7df); }
+    .stat-card.c-warn::before  { background: linear-gradient(90deg, var(--warn), #ffe07a); }
+    .stat-card.c-purple::before{ background: linear-gradient(90deg, #b06bff, #d09fff); }
+
+    .stat-label {
+      font-size: .68rem; color: #6b7a99;
+      text-transform: uppercase; letter-spacing: .08em;
+      font-weight: 700; margin-bottom: .35rem;
+    }
+    .stat-value { font-size: 1.7rem; font-weight: 900; color: #1a2f6e; line-height: 1; }
+    .stat-card.c-teal   .stat-value { color: #0d8f85; }
+    .stat-card.c-warn   .stat-value { color: #b07b00; }
+    .stat-card.c-purple .stat-value { color: #6b3fbe; }
+
+    /* Filters */
+    .filters {
+      padding: .75rem 2rem 1rem;
+      display: flex; gap: .75rem; flex-wrap: wrap; align-items: center;
+      background: #fff;
+      border-bottom: 1px solid #e0e8f5;
+    }
+
+    .search-input, .filter-select {
+      background: #f6f9ff;
+      border: 1px solid #c8d8f0;
+      border-radius: 10px;
+      color: #1a2f6e;
+      font-family: 'Nunito', sans-serif;
+      font-size: .875rem; font-weight: 600;
+      padding: .55rem 1rem; outline: none;
+      transition: border .2s;
+    }
+    .search-input { width: 280px; }
+    .search-input::placeholder { color: #a0aec0; }
+    .search-input:focus, .filter-select:focus {
+      border-color: #1a2f6e;
+      background: #fff;
+    }
+    .filter-select option { background: #fff; color: #1a2f6e; }
+
+    /* Table */
+    .table-wrap { overflow-x: auto; padding: 0 2rem 3rem; background: #fff; }
+
+    table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+
+    thead tr { background: #1a2f6e; }
+
+    th {
+      text-align: left; padding: .8rem .9rem;
+      color: #ffffff; font-weight: 800;
+      font-size: .68rem; text-transform: uppercase; letter-spacing: .08em;
+      white-space: nowrap; cursor: pointer; user-select: none;
+      transition: opacity .15s;
+    }
+    th:hover { opacity: .8; }
+
+    tbody tr { border-bottom: 1px solid #e8f0fb; transition: background .15s; }
+    tbody tr:nth-child(even) { background: #f0f6ff; }
+    tbody tr:nth-child(odd)  { background: #ffffff; }
+    tbody tr:hover { background: #dceeff !important; }
+
+    td { padding: .7rem .9rem; color: #1a2f6e; white-space: nowrap; font-weight: 500; }
+
+    .badge {
+      display: inline-block; padding: .22rem .65rem;
+      border-radius: 20px; font-size: .68rem; font-weight: 800; letter-spacing: .03em;
+    }
+    .badge-ok     { background: #d4f5f0; color: #0a7a72;   border: 1px solid #a0ddd8; }
+    .badge-pend   { background: #fef3c7; color: #92600a;   border: 1px solid #f6d860; }
+    .badge-cancel { background: #fde8e8; color: #b91c1c;   border: 1px solid #fca5a5; }
+    .badge-init   { background: #f1f5f9; color: #64748b;   border: 1px solid #cbd5e1; }
+
+    .no-results { text-align: center; padding: 3rem; color: #6b7a99; font-size: .9rem; }
+
+    @media (max-width: 600px) {
+      .report-header, .stats-bar, .filters, .table-wrap { padding-left: 1rem; padding-right: 1rem; }
+      .search-input { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ LOCK ════════════════════════════════════════════ -->
+<div id="lock-screen">
+  <div class="abme-logo">
+    <span class="abme-logo-badge">ABME</span>
+    <span class="abme-logo-text">Alta Performance Consciente</span>
+  </div>
+  <div class="lock-card">
+    <div class="lock-icon">🔒</div>
+    <span class="lock-tag">Área Restrita</span>
+    <h1 class="lock-title">Relatório de<br>Matrículas</h1>
+    <p class="lock-sub">Digite a senha para acessar os dados do workshop.</p>
+    <div class="input-wrap">
+      <input type="password" id="pw-input" placeholder="Senha de acesso" autocomplete="current-password"/>
+      <button class="toggle-pw" onclick="togglePw()">👁</button>
+    </div>
+    <button class="btn-enter" onclick="tryLogin()">Entrar →</button>
+    <p class="error-msg" id="err-msg"></p>
+  </div>
+</div>
+
+<!-- ══ REPORT ══════════════════════════════════════════ -->
+<div id="report">
+  <div class="report-header">
+    <div class="header-left">
+      <span class="header-badge">ABME</span>
+      <div>
+        <div class="report-title">Relatório de Matrículas</div>
+        <div class="report-meta" id="report-date"></div>
+      </div>
+    </div>
+    <button class="btn-logout" onclick="logout()">Sair</button>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="stat-label">Total de Registros</div>
+      <div class="stat-value" id="stat-total">—</div>
+    </div>
+    <div class="stat-card c-teal">
+      <div class="stat-label">Concluídos</div>
+      <div class="stat-value" id="stat-ok">—</div>
+    </div>
+    <div class="stat-card c-warn">
+      <div class="stat-label">Pendentes</div>
+      <div class="stat-value" id="stat-pend">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Receita Total</div>
+      <div class="stat-value" id="stat-rev">—</div>
+    </div>
+    <div class="stat-card c-purple">
+      <div class="stat-label">Usaram Cupom</div>
+      <div class="stat-value" id="stat-cupom">—</div>
+    </div>
+  </div>
+
+  <div class="filters">
+    <input class="search-input" id="search" placeholder="🔍  Buscar por nome, e-mail, CPF…" oninput="renderTable()"/>
+    <select class="filter-select" id="filter-status" onchange="renderTable()">
+      <option value="">Todos os status</option>
+      <option value="Concluído">Concluído</option>
+      <option value="Pend. Conf. Pagto">Pendente</option>
+      <option value="Iniciado">Iniciado</option>
+      <option value="Cancelado">Cancelado</option>
+    </select>
+    <select class="filter-select" id="filter-cupom" onchange="renderTable()">
+      <option value="">Todos os cupons</option>
+      <option value="ABME50">ABME50</option>
+      <option value="FREE">FREE</option>
+      <option value="sem">Sem cupom</option>
+    </select>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th onclick="sortBy('id')">ID ↕</th>
+          <th onclick="sortBy('nome')">Nome ↕</th>
+          <th>CPF</th>
+          <th>E-mail</th>
+          <th>Celular</th>
+          <th onclick="sortBy('status')">Status ↕</th>
+          <th onclick="sortBy('data')">Data ↕</th>
+          <th onclick="sortBy('valor')">Valor ↕</th>
+          <th>Cupom</th>
+          <th>Origem</th>
+          <th>Matrícula</th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+    <div class="no-results" id="no-results" style="display:none">Nenhum registro encontrado.</div>
+  </div>
+</div>
+
+<script>
+  const SENHA = 'abme2026';
+
+  const DADOS = [
+    [99400,"Patrícia Cristinna","099.399.496-26","pcrisfg@gmail.com","(92) 98122-9631","Concluído","04/03/2026",25,"ABME50","Boleto",97126],
+    [99375,"ELISA COSTA","152.966.407-13","elisacosta1803@gmail.com","(11) 91360-8383","Concluído","03/03/2026",50,"","Boleto",97086],
+    [99370,"Mariana Silva Barreto","042.118.275-02","Marianasilbarreto@gmail.com","(71) 98880-5949","Concluído","03/03/2026",25,"ABME50","Boleto",97082],
+    [99346,"Leticia Benso","020.259.265-02","leticiabenso@gmail.com","(35) 99718-8945","Concluído","03/03/2026",25,"ABME50","Boleto",97050],
+    [99345,"Karina Araujo Sousa","031.166.863-19","kaburina-01@hotmail.com","(61) 98179-3410","Concluído","03/03/2026",25,"ABME50","Boleto",97049],
+    [99236,"ELIZANGELA DE OLIVEIRA RODRIGUES","002.390.141-11","elisa.rodrigues2002@gmail.com","(11) 99430-4632","Concluído","02/03/2026",25,"ABME50","Boleto",96920],
+    [99192,"GABRIELA SAVOIA","173.133.498-23","gabrielasavoia.contato@gmail.com","(11) 99198-4322","Pend. Conf. Pagto","02/03/2026",50,"","Boleto",""],
+    [99236,"ELIZANGELA DE OLIVEIRA RODRIGUES","002.390.141-11","elisa.rodrigues2002@gmail.com","(11) 99430-4632","Iniciado","02/03/2026",50,"","",""],
+    [99206,"Maria Beatriz Grella Vieira","320.142.088-32","bgrella@demarest.com.br","(11) 98189-8183","Concluído","27/02/2026",25,"ABME50","Boleto",96858],
+    [99192,"GABRIELA SAVOIA","173.133.498-23","gabrielasavoia.contato@gmail.com","(11) 99198-4322","Pend. Conf. Pagto","26/02/2026",50,"","Boleto",""],
+    [99171,"Ceicilene martins","480.426.501-59","ceicilene.martins@gmail.com","(61) 98350-5252","Concluído","25/02/2026",50,"","Boleto",96783],
+    [99170,"Thais Ribeiro da Silva","064.652.979-06","ribeirothais99.tr@gmail.com","(46) 99121-5657","Concluído","25/02/2026",25,"ABME50","Boleto",96782],
+    [99169,"FABIANA LUTKEMEYER","941.038.360-91","fabianalutkemeyer@gmail.com","(51) 99959-0689","Concluído","24/02/2026",50,"","Boleto",96777],
+    [99164,"Lorenna Barros Pinheiro de Araújo","624.678.913-72","lorennabparaujo@gmail.com","(85) 98858-2850","Concluído","24/02/2026",50,"","Boleto",96772],
+    [99158,"Camila Falcoeiras","138.018.107-04","camila.trindade@ons.org.br","(21) 96470-1505","Concluído","24/02/2026",25,"ABME50","Boleto",96768],
+    [99155,"Natasha Dos Anjos Huang","039.603.281-84","natasha.huang1@gmail.com","(61) 98161-8018","Concluído","23/02/2026",25,"ABME50","Boleto",96760],
+    [99154,"Luiza Calado","095.301.324-33","luizapcs@hotmail.com","(38) 99875-6893","Concluído","23/02/2026",50,"","Boleto",96762],
+    [99153,"Cristina Leitão","360.149.988-61","cristina.leitao@hays.com.br","(11) 98164-7633","Concluído","23/02/2026",25,"ABME50","Boleto",96759],
+    [99152,"Dalileia Aiala Araujo da Silva","050.337.745-73","dalyaiala@hotmail.com","(75) 98157-0066","Concluído","23/02/2026",50,"","Boleto",96758],
+    [99146,"JESSICA SOARES","400.519.478-89","jessica@abgd.com.br","(11) 97017-9446","Concluído","23/02/2026",25,"ABME50","Boleto",96748],
+    [99144,"Charlene Freitas dos Santos","138.843.487-36","charlenefreitas.s@gmail.com","(27) 99727-8495","Concluído","23/02/2026",25,"ABME50","Boleto",96751],
+    [99143,"Rosana Thomaz","146.952.138-50","rosana_thomaz@yahoo.com.br","(11) 98542-3394","Iniciado","23/02/2026",50,"","",""],
+    [99142,"DEBORA CONTRERA","278.972.808-96","deboracontrera@hotmail.com","(11) 93214-3838","Concluído","23/02/2026",50,"","Boleto",96746],
+    [99139,"Graziela Bauduin","400.290.258-77","adm.diasbauduin@gmail.com","(11) 97613-7272","Concluído","23/02/2026",25,"ABME50","Boleto",96741],
+    [99134,"Laisa Capssa","939.191.820-49","laisa.capssa@service.com.br","(21) 97629-9072","Concluído","23/02/2026",50,"","Boleto",96738],
+    [99109,"Silvania","013.471.336-23","silvaniadearaujo@yahoo.com.br","(31) 98784-6236","Concluído","19/02/2026",25,"ABME50","Boleto",96705],
+    [99108,"Laura Grault","109.932.057-71","lauragrault@gmail.com","(21) 97235-5336","Concluído","19/02/2026",50,"","Boleto",96704],
+    [99099,"Valcléia dos Santos Lima","395.540.902-34","valcleia.lima@fas-amazonia.org","(92) 98121-4335","Concluído","19/02/2026",25,"ABME50","Boleto",96689],
+    [99098,"Carolina Terra","150.077.657-24","carolinaterra17@hotmail.com","(27) 99641-9760","Concluído","19/02/2026",50,"","Boleto",96686],
+    [99095,"AUDILENE TIMOTEO LIMA RODRIGUES","153.109.508-93","audileneeduarda2020@gmail.com","(11) 93139-5311","Concluído","19/02/2026",25,"ABME50","Boleto",96688],
+    [99095,"AUDILENE TIMOTEO LIMA RODRIGUES","153.109.508-93","audileneeduarda2020@gmail.com","(11) 93139-5311","Iniciado","19/02/2026",25,"ABME50","",""],
+    [99095,"AUDILENE TIMOTEO LIMA RODRIGUES","153.109.508-93","audileneeduarda2020@gmail.com","(11) 93139-5311","Iniciado","19/02/2026",25,"ABME50","",""],
+    [99026,"Karina","325.275.738-21","karinasantos85@yahoo.com.br","(11) 97151-2484","Cancelado","19/02/2026",50,"","",""],
+    [99026,"Karina","325.275.738-21","karinasantos85@yahoo.com.br","(11) 97151-2484","Iniciado","19/02/2026",50,"","",""],
+    [99026,"Karina","325.275.738-21","karinasantos85@yahoo.com.br","(11) 97151-2484","Cancelado","19/02/2026",25,"ABME50","",""],
+    [94238,"ANDREIA RODRIGUES FERNANDES","182.678.328-82","andreiarfsolar@gmail.com","(11) 96874-0449","Concluído","19/02/2026",25,"ABME50","Boleto",96677],
+    [99089,"Nayara Rocha Ribeiro","061.984.233-44","eng.nayararocha@gmail.com","(98) 99163-8903","Concluído","18/02/2026",50,"","Boleto",96665],
+    [99088,"Emanoele Tormem","040.816.139-66","emanoeletormem@hotmail.com","(49) 98806-6199","Concluído","18/02/2026",50,"","Boleto",96661],
+    [99087,"Lina Castro","926.436.802-78","lina_brelaz@hotmail.com","(92) 99177-3821","Concluído","18/02/2026",25,"ABME50","Boleto",96660],
+    [99084,"PAMELA SILVEIRA COSTA","015.225.550-80","pscosta.geo@gmail.com","(61) 99943-6684","Concluído","18/02/2026",25,"ABME50","Boleto",96656],
+    [99083,"Clarissa Debiazi Zomer","008.387.779-70","clazomer@gmail.com","(48) 99112-4416","Concluído","18/02/2026",25,"ABME50","Boleto",96655],
+    [99082,"Priscilla t dornas","040.435.726-11","pdornas@yahoo.com.br","(31) 97361-8823","Concluído","18/02/2026",25,"ABME50","Boleto",96654],
+    [99080,"BRUNA BONELLI","027.019.416-95","brunabonelli@abrage.com.br","(61) 99877-9955","Concluído","18/02/2026",25,"ABME50","Boleto",96652],
+    [99079,"Renata Ferreira Carvalho","170.034.758-63","renata_raujo@hotmail.com","(11) 99167-6797","Concluído","18/02/2026",25,"ABME50","Boleto",96650],
+    [99078,"Cristiane Moreno","219.926.688-50","cristiane.moreno@gmail.com","(11) 98196-5696","Concluído","18/02/2026",50,"","Boleto",96649],
+    [99077,"Alessandra Da Mota Mathyas","618.371.990-00","alessandra.mathyas@gmail.com","(61) 99916-1748","Concluído","18/02/2026",25,"ABME50","Boleto",96647],
+    [99076,"Regia Moreira Leite","037.412.558-90","regia.moreira@impram.com.br","(92) 98127-3131","Concluído","18/02/2026",25,"ABME50","Boleto",96648],
+    [99075,"Daily Gomes","420.253.128-06","dailykelyvet@gmail.com","(11) 95164-8096","Concluído","18/02/2026",25,"ABME50","Boleto",96651],
+    [99074,"Renata Beckert Isfer","007.428.239-54","reisfer@gmail.com","(61) 99883-1512","Concluído","18/02/2026",25,"ABME50","Boleto",96645],
+    [99073,"Talita","004.850.297-90","talita.porto@uol.com.br","(11) 95780-5073","Concluído","18/02/2026",25,"ABME50","Boleto",96646],
+    [99072,"Tatiana Yagura","858.816.519-87","tatianayagura@hotmail.com","(21) 98076-0900","Concluído","18/02/2026",50,"","Boleto",96644],
+    [94448,"Lucia Abadia","057.707.538-11","luciaabadia777@gmail.com","19 99999-0077","Concluído","18/02/2026",25,"ABME50","Boleto",96687],
+    [99071,"Júlia Rosenthal","089.640.136-70","rosenthal.ufu@gmail.com","(47) 99747-8900","Concluído","18/02/2026",25,"ABME50","Boleto",96642],
+    [99070,"Roseane Santod","756.092.154-04","roseanealsantos@gmail.com","(11) 96633-7020","Concluído","18/02/2026",25,"ABME50","Boleto",96663],
+    [99069,"Kátia Rezende Moreira","681.702.206-10","karezmo22@gmail.com","(31) 99208-9499","Concluído","18/02/2026",25,"ABME50","Boleto",96643],
+    [99068,"Paula Constanza Wilson Aguilera","235.147.808-89","panda.luly@gmail.com","(11) 98637-1709","Concluído","18/02/2026",25,"ABME50","Boleto",96664],
+    [99043,"Angela Livino","029.716.487-29","alivino@gmail.com","(21) 99307-6465","Concluído","15/02/2026",25,"ABME50","Boleto",96602],
+    [99036,"Silviasresende@hotmail.com.br","084.839.786-01","silviasresende@hotmail.com.br","(34) 99299-6570","Concluído","13/02/2026",25,"ABME50","Boleto",96591],
+    [99033,"Sophia Mangini Zuim","499.476.468-90","sophmangini@gmail.com","(11) 97766-3375","Concluído","13/02/2026",25,"ABME50","Boleto",96586],
+    [99027,"Milena Rosa","304.507.778-12","Mmrosa@gmail.com","(11) 99644-9796","Concluído","13/02/2026",25,"ABME50","Boleto",96578],
+    [99026,"Karina","325.275.738-21","karinasantos85@yahoo.com.br","(11) 97151-2484","Cancelado","12/02/2026",25,"ABME50","",""],
+    [99026,"Karina","325.275.738-21","karinasantos85@yahoo.com.br","(11) 97151-2484","Cancelado","12/02/2026",25,"ABME50","",""],
+    [99025,"Leonardo Nicacio","481.687.968-45","leonardo.nicacio@ghmsolutions.com.br","(11) 99191-8632","Pend. Conf. Pagto","12/02/2026",25,"ABME50","Boleto",""],
+    [99023,"SIMONE SUAREZ","023.955.127-37","SICDM@ICLOUD.COM","(11) 96075-8643","Concluído","12/02/2026",25,"ABME50","Boleto",96573],
+    [99020,"Isabela Sales Vieira","008.427.644-45","isabela.vieira@mme.gov.br","(61) 98155-9685","Pend. Conf. Pagto","12/02/2026",50,"","Boleto",""],
+    [98985,"Marcos","041.698.956-06","marketing@ghmsolutions.com.br","(31) 98701-0457","Concluído","12/02/2026",0,"FREE","Gratuito",96550],
+    [99004,"Carla Regina","086.801.867-83","crsf.adm@gmail.com","(21) 99718-7567","Concluído","11/02/2026",25,"ABME50","Boleto",96543],
+    [99003,"Julia C Gandos Fonseca","074.931.197-59","julia.gandos@gmail.com","(11) 94503-7534","Concluído","11/02/2026",50,"","Boleto",96541],
+    [98981,"Ivonice Campos Dias","257.598.259-68","ivinicecampos@gmail.com","(61) 99988-5417","Concluído","09/02/2026",25,"ABME50","Boleto",96506],
+    [94305,"Juliana Ulian","307.670.548-22","juliana@ghmsolutions.com.br","(11) 99788-2408","Concluído","09/02/2026",25,"ABME50","Boleto",96504],
+    [94305,"Juliana Ulian","307.670.548-22","juliana@ghmsolutions.com.br","(11) 99788-2408","Iniciado","09/02/2026",25,"ABME50","",""],
+    [98979,"Mariana galhardo","272.543.348-70","mariana.galhardo@g2aconsultores.com.br","(11) 98859-3916","Concluído","09/02/2026",25,"ABME50","Boleto",96505],
+    [98977,"Ana Benicio","107.217.687-41","ana@mulheresdegas.com.br","(85) 98660-4839","Concluído","09/02/2026",25,"ABME50","Boleto",96498],
+    [98975,"ELUSA MOREIRA BARROSO BRASIL","072.880.757-29","elusarj@hotmail.com","(21) 99481-9134","Concluído","09/02/2026",25,"ABME50","Boleto",96495],
+  ];
+
+  let sortCol = null, sortAsc = true;
+
+  document.getElementById('pw-input').addEventListener('keydown', e => { if (e.key==='Enter') tryLogin(); });
+
+  function tryLogin() {
+    if (document.getElementById('pw-input').value === SENHA) {
+      document.getElementById('lock-screen').style.display = 'none';
+      document.getElementById('report').style.display = 'block';
+      initReport();
+    } else {
+      const err = document.getElementById('err-msg');
+      err.textContent = '✗ Senha incorreta. Tente novamente.';
+      document.getElementById('pw-input').style.borderColor = 'var(--danger)';
+      setTimeout(() => { err.textContent = ''; document.getElementById('pw-input').style.borderColor = ''; }, 2500);
+    }
+  }
+
+  function togglePw() {
+    const i = document.getElementById('pw-input');
+    i.type = i.type === 'password' ? 'text' : 'password';
+  }
+
+  function logout() {
+    document.getElementById('report').style.display = 'none';
+    document.getElementById('lock-screen').style.display = 'flex';
+    document.getElementById('pw-input').value = '';
+  }
+
+  function initReport() {
+    document.getElementById('report-date').textContent =
+      'Atualizado em ' + new Date().toLocaleDateString('pt-BR', {day:'2-digit',month:'long',year:'numeric'});
+    const total = DADOS.length;
+    const ok    = DADOS.filter(r => r[5]==='Concluído').length;
+    const pend  = DADOS.filter(r => r[5].includes('Pend')).length;
+    const rev   = DADOS.filter(r => r[5]==='Concluído').reduce((s,r) => s+r[7], 0);
+    const cupom = DADOS.filter(r => r[8] && r[8]!=='FREE').length;
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-ok').textContent    = ok;
+    document.getElementById('stat-pend').textContent  = pend;
+    document.getElementById('stat-rev').textContent   = 'R$\u00a0' + rev.toLocaleString('pt-BR');
+    document.getElementById('stat-cupom').textContent = cupom;
+    renderTable();
+  }
+
+  function maskCPF(v) {
+    // 099.399.496-26 → 099.***.***-26
+    return v.replace(/^(\d{3})\.\d{3}\.\d{3}(-\d{2})$/, '$1.***.***$2');
+  }
+
+  function maskEmail(v) {
+    // pcrisfg@gmail.com → p*****@gmail.com
+    const [user, domain] = v.split('@');
+    if (!domain) return v;
+    return user[0] + '*'.repeat(Math.max(1, user.length - 1)) + '@' + domain;
+  }
+
+  function maskCel(v) {
+    // (92) 98122-9631 → (92) 9****-9631
+    return v.replace(/(\(\d{2}\)\s?\d)[\d\s]+([\-\d]{4,5})$/, (_, a, b) => a + '****-' + b.replace(/\D/g,'').slice(-4));
+  }
+
+  function sortBy(col) {
+    sortCol===col ? sortAsc=!sortAsc : (sortCol=col, sortAsc=true);
+    renderTable();
+  }
+
+  function renderTable() {
+    const q    = document.getElementById('search').value.toLowerCase();
+    const fSt  = document.getElementById('filter-status').value;
+    const fCup = document.getElementById('filter-cupom').value;
+
+    let rows = DADOS.filter(r => {
+      if (q && !(r[1]+r[2]+r[3]+r[5]).toLowerCase().includes(q)) return false;
+      if (fSt && r[5]!==fSt) return false;
+      if (fCup==='sem' && r[8]!=='') return false;
+      if (fCup && fCup!=='sem' && r[8]!==fCup) return false;
+      return true;
+    });
+
+    if (sortCol) {
+      const idx = {id:0,nome:1,status:5,data:6,valor:7}[sortCol];
+      rows.sort((a,b) => {
+        let va=a[idx], vb=b[idx];
+        if (sortCol==='data') { const p=s=>s.split('/').reverse().join(''); va=p(va); vb=p(vb); }
+        return sortAsc ? (va>vb?1:-1) : (va<vb?1:-1);
+      });
+    }
+
+    const tbody = document.getElementById('table-body');
+    tbody.innerHTML = '';
+    document.getElementById('no-results').style.display = rows.length ? 'none' : 'block';
+
+    rows.forEach(r => {
+      const [id,nome,cpf,email,cel,status,data,valor,cupom,origem,matId] = r;
+      const badge = status==='Concluído'?'badge-ok':status.includes('Pend')?'badge-pend':status==='Cancelado'?'badge-cancel':'badge-init';
+      const valorFmt = valor===0
+        ? '<span style="color:#0a7a72;font-weight:800">Gratuito</span>'
+        : '<span style="color:#1a2f6e;font-weight:700">R$ '+valor.toLocaleString('pt-BR')+'</span>';
+      const cupomHtml = cupom
+        ? `<span style="background:#ede9ff;color:#5b21b6;padding:.18rem .55rem;border-radius:6px;font-size:.7rem;font-weight:800">${cupom}</span>`
+        : `<span style="color:var(--muted)">—</span>`;
+      tbody.insertAdjacentHTML('beforeend', `
+        <tr>
+          <td style="color:#6b7a99;font-size:.78rem">${id}</td>
+          <td style="font-weight:800;color:#1a2f6e">${nome}</td>
+          <td style="color:#6b7a99;font-size:.78rem">${maskCPF(cpf)}</td>
+          <td style="color:#2d4a8a">${maskEmail(email)}</td>
+          <td style="color:#6b7a99">${maskCel(cel)}</td>
+          <td><span class="badge ${badge}">${status}</span></td>
+          <td style="color:#4a5a7a">${data}</td>
+          <td>${valorFmt}</td>
+          <td>${cupomHtml}</td>
+          <td style="color:#6b7a99">${origem||'—'}</td>
+          <td style="color:#6b7a99">${matId||'—'}</td>
+        </tr>`);
+    });
+  }
+</script>
+</body>
+</html>
